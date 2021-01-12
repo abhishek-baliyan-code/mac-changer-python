@@ -6,7 +6,7 @@ import optparse
 def check_mac(user_mac, system_mac):
     if (user_mac == system_mac):
         return True
-    return false
+    return False
 
 def read_mac(interface):
     # read
@@ -32,22 +32,16 @@ def get_arguments():
         parser.error("[-] Please specify a new MAC, use --help for more info.")
     return options
 
-# def change_mac(interface, new_mac):
-#     print("Mac is changing of " + interface + " to " + new_mac)
-#     subprocess.run(["ifconfig", interface, "down"])
-#     subprocess.run(["ifconfig", interface, "hw", "ether", new_mac])
-#     subprocess.run(["ifconfig", interface, "up"], check=True)
-
-# change_mac(options.interface, options.new_mac)
+def change_mac(interface, new_mac):
+    print("Mac is changing of " + interface + " to " + new_mac)
+    subprocess.run(["ifconfig", interface, "down"])
+    subprocess.run(["ifconfig", interface, "hw", "ether", new_mac])
+    subprocess.run(["ifconfig", interface, "up"], check=True)
 
 options = get_arguments()
-# change_mac(options.interface, options.new_mac)
+
+change_mac(options.interface, options.new_mac)
 
 mac_address = read_mac(options.interface)
 
-# str_decode = command_output.decode("UTF-8")
-
-print(type(mac_address))
-# print(command_output.decode("UTF-8"))
-
-print(type(mac_address), type(options.new_mac))
+print(check_mac(options.new_mac, mac_address))
