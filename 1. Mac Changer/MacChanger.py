@@ -2,23 +2,12 @@
 
 import subprocess
 import optparse
+import re
 
 def check_mac(user_mac, system_mac):
     if (user_mac == system_mac):
         return True
     return False
-
-def read_mac(interface):
-    # read
-    shell_output = subprocess.run(["ifconfig", interface], capture_output=True)    
-    # Select stdout, decode byte to str
-    stdout_str = shell_output.stdout.decode("UTF-8")
-    #  find index of "ether"
-    index = stdout_str.find("ether")
-    #  get the mac using string slice
-    mac = stdout_str[index + 6:index + 6 + 17]
-    return mac
-
 
 def get_arguments():
     parser = optparse.OptionParser()
@@ -38,10 +27,26 @@ def change_mac(interface, new_mac):
     subprocess.run(["ifconfig", interface, "hw", "ether", new_mac])
     subprocess.run(["ifconfig", interface, "up"], check=True)
 
+def get_current_mac(interface):
+    ifconfig_result = subprocess.run(["ifconfig", interface], capture_output=True)    
+    ifconfig_result = ifconfig_result.stdout.decode("UTF-8")
+    current_mac = re.search(r"\w\w:\w\w:\w\w:\w\w:\w\w:\w\w", ifconfig_result)
+
+    if current_mac:
+        return current_mac.group(0)
+    else:
+        print("[-] Could not find MAC address")
+
 options = get_arguments()
+
+current_mac = get_current_mac(options.interface)
+print("Current MAC = " + str(current_mac))
 
 change_mac(options.interface, options.new_mac)
 
-mac_address = read_mac(options.interface)
+current_mac = get_current_mac(options.interface)
+if current_mac == options.new_mac:
+    print("[+] MAC address has been sucessfully changed to " + current_mac)
+else:
+    print("[-] MAC address didn't change")
 
-print(check_mac(options.new_mac, mac_address))
